@@ -6,3 +6,4 @@ go build *.go
 
 ### To run this module 
 ./<module_name>
+# 16 pro - , 16 pro max -  

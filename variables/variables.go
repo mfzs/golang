@@ -7,6 +7,8 @@ func main(){
 	b := 7
 	var c float64  = 9.2
 	var d float64  = 11.1
+
+	fmt.Println("-----------------------------------------")
 	fmt.Printf("The sum of %d and %d is: %d\n", a,b,a+b)
 	fmt.Printf("The diff of %d and %d is: %d\n", a,b,a-b)
 	fmt.Printf("The div of %d and %d is: %d\n", a,b,a/b)
@@ -22,7 +24,8 @@ func main(){
 	fmt.Println("-----------------------------------------")
 	var e = "My name is"
 	var f = "Firoz"
-
 	fmt.Printf(e+" "+f)
+
+	fmt.Println("-----------------------------------------")
 
 }
