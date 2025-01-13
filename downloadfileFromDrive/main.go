@@ -68,7 +68,7 @@ func downloadFile(accessToken, fileID, destFilePath string) error {
 	client := resty.New()
 
 	// Correct URL for downloading files from OneDrive or SharePoint
-	userID := "firoj.siddique@neuron7.ai" // Replace with actual user ID
+	userID := "" // Replace with actual user ID
 	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/users/%s/drive/items/%s/content", userID, fileID)
 
 	resp, err := client.R().
@@ -97,8 +97,8 @@ func downloadFile(accessToken, fileID, destFilePath string) error {
 func main() {
 	loadEnv()
 
-	fileID := "B9D1E1C5-0E01-42F6-9A94-5F6FBCA07E1B" // Replace with actual file ID
-	destFilePath := "/Users/firoj.sidddique/Movies/git/golang/excelSheetRoster/downloaded-file.xlsx"
+	fileID := "" // Replace with actual file ID
+	destFilePath := ""
 
 	// fmt.Println("CLIENT_ID:", os.Getenv("CLIENT_ID"))
 	// fmt.Println("CLIENT_SECRET:", os.Getenv("CLIENT_SECRET"))
