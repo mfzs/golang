@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Neuron7's Internal Resource Portal</h1>
+        <h3>Hey {{.Username}},</h3>
+        <h3>We're glad to have you on board. Here you can find information about our clients, their resources, and associated servers. Explore the available links to manage and monitor the health of our services.</h3>
+    </div>
+    <div class="container">
+        <ul>
+            <li><a href="/infra">Infra Resource Links</a></li>
+            <li><a href="/endpoints">Endpoints and Status</a></li>
+            <li><a href="/clients">Client and Their Resources</a></li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients and Resources</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Clients and Resources</h1>
+        <table class="infra-table">
+            <thead>
+                <tr>
+                    <th>Client Name</th>
+                    <th>Resources</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .clients}}
+                <tr>
+                    <td>{{.ClientName}}</td>
+                    <td>{{.Resources}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

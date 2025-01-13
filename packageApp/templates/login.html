@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="login-page">
+    <div class="container">
+        <h1>Welcome to Neuron7</h1>
+
+        <!-- Toggle between Login and Sign Up Forms -->
+        <div id="loginFormContainer">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="loginUsername">Username:</label>
+                <input type="text" id="loginUsername" name="username" required>
+                <br>
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" name="password" required>
+                <br>
+                <button type="submit">Login</button>
+            </form>
+            <p id="loginMessage"></p>
+            <p>Don't have an account? <a href="javascript:void(0);" onclick="toggleForms()">Sign up</a></p>
+        </div>
+
+        <div id="signupFormContainer" style="display: none;">
+            <h2>Sign Up</h2>
+            <form id="signupForm">
+                <label for="signupUsername">Username:</label>
+                <input type="text" id="signupUsername" name="username" required>
+                <br>
+                <label for="signupPassword">Password:</label>
+                <input type="password" id="signupPassword" name="password" required>
+                <br>
+                <label for="signupConfirmPassword">Confirm Password:</label>
+                <input type="password" id="signupConfirmPassword" name="confirmPassword" required>
+                <br>
+                <button type="submit">Sign Up</button>
+            </form>
+            <p id="signupMessage"></p>
+            <p>Already have an account? <a href="javascript:void(0);" onclick="toggleForms()">Login</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle between Login and Sign Up Forms
+        function toggleForms() {
+            document.getElementById('loginFormContainer').style.display = document.getElementById('loginFormContainer').style.display === 'none' ? 'block' : 'none';
+            document.getElementById('signupFormContainer').style.display = document.getElementById('signupFormContainer').style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Handle Login Form Submit
+        document.getElementById('loginForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                window.location.href = "/home";
+            } else {
+                document.getElementById('loginMessage').textContent = data.message;
+            }
+        });
+
+        // Handle Sign Up Form Submit
+        document.getElementById('signupForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                document.getElementById('signupMessage').textContent = "Passwords do not match.";
+                return;
+            }
+
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                window.location.href = "/home";
+            } else {
+                document.getElementById('signupMessage').textContent = data.message;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client & Server Resources</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Welcome Note for Neuron7 Employees -->
+    <div class="welcome-note">
+        <h1>Welcome to Neuron7's Internal Resource Portal</h1>
+        <p>Hey {{.Username}},</p>
+        <p>We're glad to have you on board. Here you can find information about our clients, their resources, and associated servers. Explore the available links to manage and monitor the health of our services.</p>
+    </div>
+
+    <!-- Main Content: Client & Server Resources -->
+    <h2>Client & Server Resources</h2>
+    {{range .clients}}
+        <div class="client-section">
+            <h3>{{.Client.Name}}</h3>
+            <p><strong>Resources:</strong> {{.Client.Resources}}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Server Name</th>
+                        <th>URL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Servers}}
+                    <tr>
+                        <td>{{.ServerName}}</td>
+                        <td><a href="{{.URL}}" target="_blank">{{.URL}}</a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    {{end}}
+</body>
+</html>
