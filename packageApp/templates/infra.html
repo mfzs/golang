@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infra Resource Links</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        /* Hide the form by default */
+        .add-resource-form {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Infra Resource Links</h1>
+        <table class="infra-table">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>URL</th>
+                    <th>Owner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .resources}}
+                <tr>
+                    <td>{{.ServiceName}}</td>
+                    <td><a href="{{.URL}}" target="_blank">{{.URL}}</a></td>
+                    <td>{{.Owner}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        <!-- Link to show the Add Resource Form -->
+        <button id="showFormBtn">Add New Resource</button>
+        <!-- Add Resource Form (Initially Hidden) -->
+        <div class="add-resource-form">
+            <h2>Add New Resource</h2>
+            <form id="addResourceForm">
+                <label for="serviceName">Service Name:</label>
+                <input type="text" id="serviceName" name="serviceName" required>
+                <br>
+                <label for="url">URL:</label>
+                <input type="url" id="url" name="url" required>
+                <br>
+                <label for="owner">Owner:</label>
+                <input type="text" id="owner" name="owner" required>
+                <br>
+                <button type="submit">Add Resource</button>
+            </form>
+            <p id="message"></p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle visibility of the form when the button is clicked
+        document.getElementById('showFormBtn').addEventListener('click', function() {
+            const form = document.querySelector('.add-resource-form');
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        });
+
+        // Handle Add Resource Form Submission
+        document.getElementById('addResourceForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const serviceName = document.getElementById('serviceName').value;
+            const url = document.getElementById('url').value;
+            const owner = document.getElementById('owner').value;
+
+            const response = await fetch('/addResource', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ serviceName, url, owner }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('message').textContent = "Resource added successfully!";
+                // Optionally, reload or update the table to reflect the changes
+                window.location.reload();
+            } else {
+                document.getElementById('message').textContent = data.message;
+            }
+        });
+    </script>
+</body>
+</html>

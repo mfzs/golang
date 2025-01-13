@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endpoints and Status</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Endpoints and Status</h1>
+
+        <!-- Table displaying the endpoints -->
+        <table class="infra-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Environment</th>
+                    <th>URL</th>
+                    <th>Status Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .servers}}
+                <tr class="{{if or (and (ge .StatusCode 200) (lt .StatusCode 300)) (and (ge .StatusCode 300) (lt .StatusCode 400))}}success{{else}}error{{end}}">
+                    <td>{{.Name}}</td>
+                    <td>{{.Env}}</td>
+                    <td>{{.URL}}</td>
+                    <td>{{if eq .StatusCode 0}}Unreachable{{else}}{{.StatusCode}}{{end}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+
+        <!-- Button to open the modal -->
+        <button id="showFormBtn">Add New Endpoint</button>
+
+        <!-- Modal -->
+        <div id="endpointModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h2>Add New Resource</h2>
+                <form id="addEndpointForm">
+                    <label for="nameoftheserver">Server Name:</label>
+                    <input type="text" id="nameoftheserver" name="nameoftheserver" required>
+                    <br>
+                    <label for="env">Environment</label>
+                    <input type="text" id="env" name="env" required>
+                    <br>
+                    <label for="url_endpoint">Endpoint:</label>
+                    <input type="url" id="url_endpoint" name="url_endpoint" required>
+                    <br>
+                    <button type="submit">Add Endpoint</button>
+                </form>
+                <p id="message"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Get modal and elements
+    const modal = document.getElementById('endpointModal');
+    const showFormBtn = document.getElementById('showFormBtn');
+    const closeModal = document.getElementById('closeModal');
+
+    // Show the modal when the button is clicked
+    showFormBtn.addEventListener('click', function() {
+        modal.style.display = "block";
+    });
+
+    // Close the modal when the close button is clicked
+    closeModal.addEventListener('click', function() {
+        modal.style.display = "none";
+    });
+
+    // Close the modal when clicking outside of the modal content
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    // Handle Add Resource Form Submission
+    document.getElementById('addEndpointForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const nameoftheserver = document.getElementById('nameoftheserver').value;
+        const env = document.getElementById('env').value;
+        const url_endpoint = document.getElementById('url_endpoint').value;
+
+        const response = await fetch('/addEndpoint', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nameoftheserver, env, url_endpoint }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            document.getElementById('message').textContent = "Resource added successfully!";
+            // Optionally, reload or update the table to reflect the changes
+            window.location.reload();
+        } else {
+            document.getElementById('message').textContent = data.message;
+        }
+    });
+    </script>
+</body>
+</html>
