@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"crypto/tls"
 	"fmt"
+	"log"
 	"net"
 	"net/smtp"
 	"os"
 	"regexp"
 	"strings"
-	"log"
+
 	"github.com/joho/godotenv"
 )
 
@@ -22,33 +23,26 @@ var (
 	senderPassword string
 	disclaimer     = "\n\nNOTE: If you are unavailable during this time, please contact your manager immediately.\n"
 	ccEmails       = []string{
-		"pratiksha.somani@neuron7.ai", 
-		"abinaya.govindan@neuron7.ai",
-		"chetan.kalyan@neuron7.ai",
-		"gyan.ranjan@neuron7.ai",
-		"infra@neuron7.ai",
+		"firojsiddique100@gmail.com",
 	}
 )
 
 // Load environment variables from .env file
 func loadEnvVariables() error {
-	err := godotenv.Load("env_file") // Replace with your .env file name if it's different
+	err := godotenv.Load("env_file")
 	if err != nil {
 		return fmt.Errorf("error loading env_file")
 	}
 
-	// Read environment variables
 	smtpHost = os.Getenv("SMTP_HOST")
 	smtpPort = os.Getenv("SMTP_PORT")
 	senderName = os.Getenv("SENDER_NAME")
 	senderEmail = os.Getenv("SENDER_EMAIL")
 	senderPassword = os.Getenv("SENDER_PASSWORD")
 
-	// Ensure the required environment variables are set
 	if smtpHost == "" || smtpPort == "" || senderName == "" || senderEmail == "" || senderPassword == "" {
 		return fmt.Errorf("missing required environment variables")
 	}
-
 	return nil
 }
 
@@ -62,14 +56,14 @@ func extractEmailsFromFile(filename string) ([]string, string, error) {
 
 	emails := []string{}
 	scanner := bufio.NewScanner(file)
-	emailRegex := regexp.MustCompile(`[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}`)
+	emailRegex := regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`)
 
 	var fileContent strings.Builder
 	for scanner.Scan() {
 		line := scanner.Text()
-		fileContent.WriteString(line + "\n") // Append the line to file content
+		fileContent.WriteString(line + "\n")
 
-		matches := emailRegex.FindAllString(line, -1) // Extract all email addresses
+		matches := emailRegex.FindAllString(line, -1)
 		emails = append(emails, matches...)
 	}
 
@@ -80,9 +74,9 @@ func extractEmailsFromFile(filename string) ([]string, string, error) {
 	return emails, fileContent.String(), nil
 }
 
-// Send alert to a specific email
-func sendAlert(email string, message string, ccEmails []string) error {
-	// Connect to the SMTP server
+// Send a single alert to all recipients
+func sendAlertToAll(recipients []string, message string, ccEmails []string) error {
+	// Connect to SMTP server
 	serverAddress := smtpHost + ":" + smtpPort
 	conn, err := net.Dial("tcp", serverAddress)
 	if err != nil {
@@ -110,35 +104,36 @@ func sendAlert(email string, message string, ccEmails []string) error {
 		return fmt.Errorf("authentication failed: %v", err)
 	}
 
-	// Set sender and recipients
+	// Set sender
 	if err := client.Mail(senderEmail); err != nil {
 		return fmt.Errorf("failed to set sender: %v", err)
 	}
-	if err := client.Rcpt(email); err != nil {
-		return fmt.Errorf("failed to set recipient: %v", err)
-	}
 
-	// Add CC recipients
-	for _, cc := range ccEmails {
-		if err := client.Rcpt(cc); err != nil {
-			return fmt.Errorf("failed to set CC recipient: %v", err)
+	// Add all recipients (To + Cc)
+	allRecipients := append(recipients, ccEmails...)
+	for _, recipient := range allRecipients {
+		if err := client.Rcpt(recipient); err != nil {
+			return fmt.Errorf("failed to add recipient %s: %v", recipient, err)
 		}
 	}
 
-	// Send email body
+	// Start email data
 	writer, err := client.Data()
 	if err != nil {
 		return fmt.Errorf("failed to start data command: %v", err)
 	}
 	defer writer.Close()
 
-	// Construct email headers and body
+	// Headers
+	toHeader := strings.Join(recipients, ", ")
 	ccHeader := strings.Join(ccEmails, ", ")
 	headers := fmt.Sprintf("From: %s\nTo: %s\nCc: %s\nSubject: Roster Notification\n\n",
-		senderEmail, email, ccHeader)
+		senderEmail, toHeader, ccHeader)
+
+	// Body
 	body := fmt.Sprintf("Hello N7 Folks,\n\n%s\n%s\nBest regards,\nAlert System", message, disclaimer)
 
-	// Write headers and body to the email
+	// Write the email
 	_, err = writer.Write([]byte(headers + body))
 	if err != nil {
 		return fmt.Errorf("failed to write email body: %v", err)
@@ -147,30 +142,29 @@ func sendAlert(email string, message string, ccEmails []string) error {
 	return nil
 }
 
-// Send alerts to all valid emails from the provided file
+// Public function to send alerts from file
 func SendAlertToEmails(filePath string) error {
-	// Load environment variables
+	// Load env vars
 	if err := loadEnvVariables(); err != nil {
 		return err
 	}
 
-	// Extract emails and file content from the provided file
+	// Extract email list and message
 	emails, fileContent, err := extractEmailsFromFile(filePath)
 	if err != nil {
-		return fmt.Errorf("failed to read emails from file: %v", err)
+		return fmt.Errorf("failed to extract emails: %v", err)
 	}
 
-	// Add file content to alert message
-	alertMessageWithContent := fileContent
-
-	// Send alerts to each valid email and include CC
-	for _, email := range emails {
-		if err := sendAlert(email, alertMessageWithContent, ccEmails); err != nil {
-			log.Printf("Failed to send alert to %s: %v\n", email, err)
-		} else {
-			log.Printf("Alert sent successfully to %s\n", email)
-		}
+	if len(emails) == 0 {
+		return fmt.Errorf("no email addresses found in file")
 	}
 
+	// Send one alert to all recipients
+	err = sendAlertToAll(emails, fileContent, ccEmails)
+	if err != nil {
+		return fmt.Errorf("failed to send alert: %v", err)
+	}
+
+	log.Printf("Alert sent successfully to all recipients")
 	return nil
 }
